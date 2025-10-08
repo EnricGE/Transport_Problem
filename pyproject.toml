@@ -1,0 +1,9 @@
+[project]
+name = "transportproblem"
+version = "0.1.0"
+description = "Transport Problem"
+requires-python = "==3.11.13"
+
+dependencies = [
+    "pyomo>=6.9.4",
+]
