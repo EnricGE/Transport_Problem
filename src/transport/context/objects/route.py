@@ -41,6 +41,20 @@ class Route(BaseModel):
     def __repr__(self) -> str:
         return self.id_
 
+    @field_validator("origin")
+    @classmethod
+    def origin_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Route.origin cannot be empty")
+        return v
+
+    @field_validator("destination")
+    @classmethod
+    def destinationnot_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Route.destination cannot be empty")
+        return v
+
     @field_validator("transport_cost")
     @classmethod
     def validate_transport_cost(cls, value: float, info: ValidationInfo) -> None:

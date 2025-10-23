@@ -28,6 +28,13 @@ class Client(BaseModel):
     def __repr__(self) -> str:
         return self.id_
 
+    @field_validator("id_")
+    @classmethod
+    def id_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Client.id_ cannot be empty")
+        return v
+
     @field_validator("demand")
     @classmethod
     def validate_demand(cls, value: float, info: ValidationInfo) -> None:
