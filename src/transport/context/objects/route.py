@@ -1,68 +1,58 @@
-class Route:
+from typing_extensions import override, cast
+
+from pydantic import BaseModel, ValidationInfo, field_validator
+
+from transport.context.objects.validation_utils import check_value_in_range
+
+
+class Route(BaseModel):
     """
     Route class
 
     Attributes
     ----------
-    __origin : str
+    origin : str
         Origin Workshop of the route.
-    __destination : str
+    destination : str
         Destination Workshop of the route.
-    __transport_cost: float
+    transport_cost: float
         Cost to transport the product through the route.
-    __transport_capacity: float
+    transport_capacity: float
         Maximum product capacity to transport through the route.
-    __is_active: bool
+    is_active: bool
          Boolean indicating whether the route is active.
     """
 
-    def __init__(
-        self,
-        origin: str,
-        destination: str,
-        transport_cost: float,
-        transport_capacity: float,
-        is_active: bool,
-    ) -> None:
-        self.__origin: str = origin
-        self.__destination: str = destination
-        self.__transport_cost: float = transport_cost
-        self.__transport_capacity: float = transport_capacity
-        self.__is_active: bool = is_active
-
-    # --- ID made of (origin, destination)
-    @property
-    def identifier(self) -> tuple[str, str]:
-        return (self.__origin, self.__destination)
+    origin: str
+    destination: str
+    transport_cost: float
+    transport_capacity: float
+    is_active: bool
 
     @property
-    def origin(self) -> str:
-        return self.__origin
+    def id_(self) -> str:
+        return self.origin + ", " + self.destination
 
-    @property
-    def destination(self) -> str:
-        return self.__destination
+    @override
+    def __str__(self) -> str:
+        return self.id_
 
-    @property
-    def transport_cost(self) -> float:
-        return self.__transport_cost
+    @override
+    def __repr__(self) -> str:
+        return self.id_
 
-    @transport_cost.setter
-    def transport_cost(self, value: float) -> None:
-        self.__transport_cost = float(value)
+    @field_validator("transport_cost")
+    @classmethod
+    def validate_transport_cost(cls, value: float, info: ValidationInfo) -> None:
+        min_range = 0.0
+        max_range = None
+        id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
+        check_value_in_range(value, min_range, max_range, id_)
 
-    @property
-    def transport_capacity(self) -> float:
-        return self.__transport_capacity
-
-    @transport_capacity.setter
-    def transport_capacity(self, value: float) -> None:
-        self.__transport_capacity = float(value)
-
-    @property
-    def is_active(self) -> bool:
-        return self.__is_active
-
-    @is_active.setter
-    def is_active(self, value: bool) -> None:
-        self.__is_active = bool(value)
+    @field_validator("transport_capacity")
+    @classmethod
+    def validate_transport_capacity(cls, value: float, info: ValidationInfo) -> None:
+        min_range = 0.0
+        max_range = None
+        id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
+        check_value_in_range(value, min_range, max_range, id_)

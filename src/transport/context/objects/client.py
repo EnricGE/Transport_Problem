@@ -1,23 +1,37 @@
-class Client:
+from typing_extensions import override, cast
+
+from pydantic import BaseModel, ValidationInfo, field_validator
+
+from transport.context.objects.validation_utils import check_value_in_range
+
+
+class Client(BaseModel):
     """
     Client class
 
     Attributes
     ----------
-    __id_ : str
+    id_ : str
         Unique identifier of the class instance.
-    __demand: float
+    demand: float
         Product quantity demand of the product by the client.
     """
 
-    def __init__(self, id_: str, demand: float) -> None:
-        self.__id_: str = id_
-        self.__demand: float = demand
+    id_: str
+    demand: float
 
-    @property
-    def id_(self) -> str:
-        return self.__id_
+    @override
+    def __str__(self) -> str:
+        return self.id_
 
-    @id_.setter
-    def id_(self, id_: str) -> None:
-        self.__id_ = id_
+    @override
+    def __repr__(self) -> str:
+        return self.id_
+
+    @field_validator("demand")
+    @classmethod
+    def validate_demand(cls, value: float, info: ValidationInfo) -> None:
+        min_range = 0.0
+        max_range = None
+        id_ = cast(str, "Client[" + info.data.get("id_", "unknown") + "]")
+        check_value_in_range(value, min_range, max_range, id_)
