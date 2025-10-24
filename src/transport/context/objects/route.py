@@ -43,17 +43,17 @@ class Route(BaseModel):
 
     @field_validator("origin")
     @classmethod
-    def origin_not_empty(cls, v: str) -> str:
-        if not v.strip():
+    def origin_not_empty(cls, value: str) -> str:
+        if not value.strip():
             raise ValueError("Route.origin cannot be empty")
-        return v
+        return value
 
     @field_validator("destination")
     @classmethod
-    def destinationnot_empty(cls, v: str) -> str:
-        if not v.strip():
+    def destinationnot_empty(cls, value: str) -> str:
+        if not value.strip():
             raise ValueError("Route.destination cannot be empty")
-        return v
+        return value
 
     @field_validator("transport_cost")
     @classmethod
