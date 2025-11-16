@@ -1,8 +1,11 @@
+from __future__ import annotations
+from pathlib import Path
+
 from transport.context.model_data import ModelData
 from transport.context.objects import Workshop, Client, Route
-from transport.factory.types import DataDict, WorkshopRow, ClientRow, RouteRow
+from transport.factory.types import WorkshopRow, ClientRow, RouteRow
 
-from transport.factory.model_data_converter import Converter
+from transport.factory.model_data_converter import Converter, DataDict
 
 
 class ModelDataFactory:
@@ -10,22 +13,44 @@ class ModelDataFactory:
         pass
 
     @staticmethod
-    def from_json(file: str) -> ModelData:
+    def from_json(file: str | "Path") -> ModelData:
         return ModelDataFactory()._create_model_data(Converter.from_json(file))
-    
+
     @staticmethod
     def from_excel(file: str) -> ModelData:
         return ModelDataFactory()._create_model_data(Converter.from_excel(file))
-    
+
     def _create_model_data(self, data_dict: DataDict) -> ModelData:
+        workshops = [
+            Workshop(
+                id_=w["id"],
+                production_capacity=float(w["production_capacity"]),
+                production_cost=float(w["production_cost"]),
+            )
+            for w in data_dict.get("workshops", [])
+        ]
 
-        model_data = ModelData()
+        clients = [
+            Client(
+                id_=c["id"],
+                demand=float(c["demand"]),
+            )
+            for c in data_dict.get("clients", [])
+        ]
 
-        model_data.workshops = self._create_workshops(data_dict)
-        model_data.clients = self._create_clients(data_dict)
-        model_data.routes = self._create_routes(data_dict)
+        routes = [
+            Route(
+                # id_=r["id"],
+                origin=r["origin"],
+                destination=r["destination"],
+                transport_cost=float(r["transport_cost"]),
+                transport_capacity=float(r["transport_capacity"]),
+                is_active=bool(r.get("is_active", True)),
+            )
+            for r in data_dict.get("routes", [])
+        ]
 
-        return model_data
+        return ModelData(workshops=workshops, clients=clients, routes=routes)
 
     def _create_workshops(self, data_dict: DataDict) -> list[Workshop]:
         workshop_dicts_list: list[WorkshopRow] = data_dict["Workshops"]

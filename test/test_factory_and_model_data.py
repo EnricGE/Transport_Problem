@@ -1,19 +1,18 @@
-import os
-
+from pathlib import Path
 import pytest
 
 from transport.context import ModelData
 from transport.factory import ModelDataFactory
 
 
-PATH = os.path.abspath(__file__)
+PATH = Path(__file__).parent
 
 
 class TestFactoryAndModelData:
     @pytest.fixture(scope="class")
     def model_data(self) -> ModelData:
         return ModelDataFactory.from_json(
-            file=PATH + "data/test_data_and_data_factory.json"
+            PATH / "data" / "test_data_and_data_factory.json"
         )
 
     def test_workshops(self, model_data: ModelData) -> None:
@@ -46,7 +45,7 @@ class TestFactoryAndModelData:
         assert client3.demand == 74.0
 
     def test_routes(self, model_data: ModelData) -> None:
-        route11 = model_data.routes_by_id["Route11"]
+        route11 = model_data.routes_by_id["Workshop1,Client1"]
         assert route11.origin == "Workshop1"
         assert route11.destination == "Client1"
         assert route11.transport_cost == 12.0

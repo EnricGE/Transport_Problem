@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import json
+from pathlib import Path
+from typing import Union
 
 from transport.factory.types import DataDict
 
 
-class Converter:
+PathLike = Union[str, Path]
 
+
+class Converter:
     def __init__(self):
         pass
 
@@ -15,7 +21,7 @@ class Converter:
         return data
 
     @staticmethod
-    def from_excel(file: str) -> DataDict:
+    def from_excel(file: PathLike) -> DataDict:
         import pandas as pd
 
         workshops = pd.read_excel(file, sheet_name="Workshops").to_dict("records")
