@@ -1,9 +1,9 @@
 from pathlib import Path
+
 import pytest
 
 from transport.context import ModelData
 from transport.factory import ModelDataFactory
-
 
 PATH = Path(__file__).parent
 
@@ -52,56 +52,56 @@ class TestFactoryAndModelData:
         assert route11.transport_capacity == 15.0
         assert route11.is_active
 
-        route12 = model_data.routes_by_id["Route12"]
+        route12 = model_data.routes_by_id["Workshop1,Client2"]
         assert route12.origin == "Workshop1"
         assert route12.destination == "Client2"
         assert route12.transport_cost == 11.0
         assert route12.transport_capacity == 16.0
         assert not (route12.is_active)
 
-        route13 = model_data.routes_by_id["Route13"]
+        route13 = model_data.routes_by_id["Workshop1,Client3"]
         assert route13.origin == "Workshop1"
         assert route13.destination == "Client3"
         assert route13.transport_cost == 14.0
         assert route13.transport_capacity == 17.0
         assert route13.is_active
 
-        route21 = model_data.routes_by_id["Route21"]
+        route21 = model_data.routes_by_id["Workshop2,Client1"]
         assert route21.origin == "Workshop2"
         assert route21.destination == "Client1"
         assert route21.transport_cost == 15.0
         assert route21.transport_capacity == 10.0
         assert not (route21.is_active)
 
-        route22 = model_data.routes_by_id["Route22"]
+        route22 = model_data.routes_by_id["Workshop2,Client2"]
         assert route22.origin == "Workshop2"
         assert route22.destination == "Client2"
         assert route22.transport_cost == 12.0
         assert route22.transport_capacity == 17.0
         assert route22.is_active
 
-        route23 = model_data.routes_by_id["Route23"]
+        route23 = model_data.routes_by_id["Workshop2,Client3"]
         assert route23.origin == "Workshop2"
         assert route23.destination == "Client3"
         assert route23.transport_cost == 12.0
         assert route23.transport_capacity == 17.0
         assert route23.is_active
 
-        route31 = model_data.routes_by_id["Route31"]
+        route31 = model_data.routes_by_id["Workshop3,Client1"]
         assert route31.origin == "Workshop3"
         assert route31.destination == "Client1"
         assert route31.transport_cost == 9.0
         assert route31.transport_capacity == 14.0
         assert not (route31.is_active)
 
-        route32 = model_data.routes_by_id["Route32"]
+        route32 = model_data.routes_by_id["Workshop3,Client2"]
         assert route32.origin == "Workshop3"
         assert route32.destination == "Client2"
         assert route32.transport_cost == 18.0
         assert route32.transport_capacity == 19.0
         assert route32.is_active
 
-        route33 = model_data.routes_by_id["Route33"]
+        route33 = model_data.routes_by_id["Workshop3,Client3"]
         assert route33.origin == "Workshop3"
         assert route33.destination == "Client3"
         assert route33.transport_cost == 17.0

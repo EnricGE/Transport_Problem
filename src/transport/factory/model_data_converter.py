@@ -6,7 +6,6 @@ from typing import Union
 
 from transport.factory.types import DataDict
 
-
 PathLike = Union[str, Path]
 
 
@@ -29,8 +28,8 @@ class Converter:
         routes = pd.read_excel(file, sheet_name="Routes").to_dict("records")
 
         data: DataDict = {
-            "Workshops": workshops,
-            "Clients": clients,
-            "Routes": routes,
+            "workshops": workshops,
+            "clients": clients,
+            "routes": routes,
         }
         return data

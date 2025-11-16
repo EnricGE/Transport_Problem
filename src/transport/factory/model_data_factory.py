@@ -1,11 +1,11 @@
 from __future__ import annotations
+
 from pathlib import Path
 
 from transport.context.model_data import ModelData
-from transport.context.objects import Workshop, Client, Route
-from transport.factory.types import WorkshopRow, ClientRow, RouteRow
-
+from transport.context.objects import Client, Route, Workshop
 from transport.factory.model_data_converter import Converter, DataDict
+from transport.factory.types import ClientRow, RouteRow, WorkshopRow
 
 
 class ModelDataFactory:
@@ -27,7 +27,7 @@ class ModelDataFactory:
                 production_capacity=float(w["production_capacity"]),
                 production_cost=float(w["production_cost"]),
             )
-            for w in data_dict.get("workshops", [])
+            for w in data_dict.get("Workshops", [])
         ]
 
         clients = [
@@ -35,7 +35,7 @@ class ModelDataFactory:
                 id_=c["id"],
                 demand=float(c["demand"]),
             )
-            for c in data_dict.get("clients", [])
+            for c in data_dict.get("Clients", [])
         ]
 
         routes = [
@@ -47,7 +47,7 @@ class ModelDataFactory:
                 transport_capacity=float(r["transport_capacity"]),
                 is_active=bool(r.get("is_active", True)),
             )
-            for r in data_dict.get("routes", [])
+            for r in data_dict.get("Routes", [])
         ]
 
         return ModelData(workshops=workshops, clients=clients, routes=routes)

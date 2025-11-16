@@ -22,6 +22,6 @@ class RouteRow(TypedDict):
 
 
 class DataDict(TypedDict):
-    Workshops: list[WorkshopRow]
-    Clients: list[ClientRow]
-    Routes: list[RouteRow]
+    workshops: list[WorkshopRow]
+    clients: list[ClientRow]
+    routes: list[RouteRow]

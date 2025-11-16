@@ -1,9 +1,9 @@
+import pyomo.environ as pyo
 from typing_extensions import override
 
-import pyomo.environ as pyo
-
 from transport.context import ModelData
-from transport.context.objects import Route, Client
+
+# from transport.context.objects import Route, Client
 from transport.engine.engines.abstract_engine import AbstractEngine
 
 
@@ -33,17 +33,26 @@ class EnginePyomo(AbstractEngine):
 
     def _build_solution(self) -> None:
         self.data.transport_quantity = {
-            route: pyo.value(value) 
-            for (route, value) in self.model.var_transport_quantity.items()
+            self.data.routes_by_id[route_id]: float(pyo.value(value))
+            for route_id, value in self.model.var_transport_quantity.items()
         }
 
     def _build_sets(self) -> None:
         # [Workshop]
-        self.model.workshops = pyo.Set(dimen=1, initialize=self.data.workshops)
+        self.model.workshops = pyo.Set(
+            dimen=1,
+            initialize=[w.id_ for w in self.data.workshops],
+        )
         # [Clients]
-        self.model.clients = pyo.Set(dimen=1, initialize=self.data.clients)
+        self.model.clients = pyo.Set(
+            dimen=1,
+            initialize=[c.id_ for c in self.data.clients],
+        )
         # [Routes]
-        self.model.routes = pyo.Set(dimen=1, initialize=self.data.active_routes)
+        self.model.routes = pyo.Set(
+            dimen=1,
+            initialize=[r.id_ for r in self.data.routes],
+        )
 
     def _build_variables(self) -> None:
         self.model.var_transport_quantity = pyo.Var(
@@ -72,34 +81,41 @@ class EnginePyomo(AbstractEngine):
         self.model.objective = pyo.Objective(
             rule=self._objective_function, sense=pyo.maximize
         )
-    
-    def _expr_routes_cost(self, _: pyo.ConcreteModel, route: Route) -> float:
-        return self.model.var_transport_quantity[route] * route.transport_cost
 
-    def _const_workshop_capacity(self, _: pyo.ConcreteModel, route: Route) -> bool:
+    def _expr_routes_cost(self, _: pyo.ConcreteModel, route_id: str) -> float:
+        route = self.data.routes_by_id[route_id]
+        return self.model.var_transport_quantity[route_id] * route.transport_cost
+
+    def _const_workshop_capacity(self, _: pyo.ConcreteModel, route_id: str) -> bool:
+        route = self.data.routes_by_id[route_id]
         route_workshop = self.data.workshops_by_id[route.origin]
         return (
-            self.model.var_transport_quantity[route]
+            self.model.var_transport_quantity[route_id]
             <= route_workshop.production_capacity
         )
 
-    def _const_client_demand(self, _: pyo.ConcreteModel, client: Client) -> bool:
+    def _const_client_demand(self, _: pyo.ConcreteModel, client_id: str) -> bool:
+        client = self.data.clients_by_id[client_id]
         return (
             sum(
-                self.model.var_transport_quantity[route]
-                for route in self.model.routes
-                if route.destination == client.id
+                self.model.var_transport_quantity[route_id]
+                for route_id in self.model.routes
+                if self.data.routes_by_id[route_id].destination == client.id_
             )
             <= client.demand
         )
 
-    def _const_route_capacity(self, _: pyo.ConcreteModel, route: Route) -> bool:
-        return self.model.var_transport_quantity[route] <= route.transport_capacity
-    
-    def _objective_function(self, _: pyo.ConcreteModel) -> float:
-        return sum(self.expression_routes_cost[route] for route in self.model.routes)
+    def _const_route_capacity(self, _: pyo.ConcreteModel, route_id: str) -> bool:
+        route = self.data.routes_by_id[route_id]
+        return self.model.var_transport_quantity[route_id] <= route.transport_capacity
 
-    def _check_solution_status(self):
+    def _objective_function(self, _: pyo.ConcreteModel) -> float:
+        return sum(
+            self.model.expression_routes_cost[route_id]
+            for route_id in self.model.routes
+        )
+
+    def _check_solution_status(self) -> None:
         status = self.solution.solver.status
         termination_cause = self.solution.solver.termination_condition
         cause_termination_is_time = (
