@@ -19,17 +19,21 @@
   "clients": [
     {
       "id": "Client1",
-      "demand": 0.0
+      "demand": 91.0
     },
     {
       "id": "Client2",
-      "demand": -5.0
+      "demand": 63.0
+    },
+    {
+      "id": "Client3",
+      "demand": 74.0
     }
   ],
   "routes": [
     {
       "origin": "Workshop1",
-      "destination": "Client1",
+      "destination": "",
       "transport_cost": 12.0,
       "transport_capacity": 15.0,
       "is_active": true
@@ -37,7 +41,7 @@
     {
       "origin": "Workshop1",
       "destination": "Client2",
-      "transport_cost": 11.0,
+      "transport_cost": 0.0,
       "transport_capacity": 16.0,
       "is_active": false
     },
@@ -45,13 +49,13 @@
       "origin": "Workshop1",
       "destination": "Client3",
       "transport_cost": 14.0,
-      "transport_capacity": 17.0,
+      "transport_capacity": 0.0,
       "is_active": true
     },
     {
       "origin": "Workshop2",
       "destination": "Client1",
-      "transport_cost": 15.0,
+      "transport_cost": -1.0,
       "transport_capacity": 10.0,
       "is_active": false
     },
@@ -59,35 +63,7 @@
       "origin": "Workshop2",
       "destination": "Client2",
       "transport_cost": 12.0,
-      "transport_capacity": 16.0,
-      "is_active": true
-    },
-    {
-      "origin": "Workshop2",
-      "destination": "Client3",
-      "transport_cost": 12.0,
-      "transport_capacity": 17.0,
-      "is_active": true
-    },
-    {
-      "origin": "Workshop3",
-      "destination": "Client1",
-      "transport_cost": 9.0,
-      "transport_capacity": 14.0,
-      "is_active": false
-    },
-    {
-      "origin": "Workshop3",
-      "destination": "Client2",
-      "transport_cost": 18.0,
-      "transport_capacity": 19.0,
-      "is_active": true
-    },
-    {
-      "origin": "Workshop3",
-      "destination": "Client3",
-      "transport_cost": 17.0,
-      "transport_capacity": 14.0,
+      "transport_capacity": -1.0,
       "is_active": true
     }
   ]

@@ -19,11 +19,15 @@
   "clients": [
     {
       "id": "Client1",
-      "demand": 0.0
+      "demand": 91.0
     },
     {
       "id": "Client2",
-      "demand": -5.0
+      "demand": 63.0
+    },
+    {
+      "id": "Client3",
+      "demand": 74.0
     }
   ],
   "routes": [
