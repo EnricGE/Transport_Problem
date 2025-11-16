@@ -30,15 +30,16 @@ class Client(BaseModel):
 
     @field_validator("id_")
     @classmethod
-    def id_not_empty(cls, v: str) -> str:
-        if not v.strip():
+    def id_not_empty(cls, value: str) -> str:
+        if not value.strip():
             raise ValueError("Client.id_ cannot be empty")
-        return v
+        return value
 
     @field_validator("demand")
     @classmethod
-    def validate_demand(cls, value: float, info: ValidationInfo) -> None:
+    def validate_demand(cls, value: float, info: ValidationInfo) -> float:
         min_range = 0.0
         max_range = None
         id_ = cast(str, "Client[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
+        return value

@@ -31,7 +31,7 @@ class Route(BaseModel):
 
     @property
     def id_(self) -> str:
-        return self.origin + ", " + self.destination
+        return self.origin + "," + self.destination
 
     @override
     def __str__(self) -> str:
@@ -57,16 +57,18 @@ class Route(BaseModel):
 
     @field_validator("transport_cost")
     @classmethod
-    def validate_transport_cost(cls, value: float, info: ValidationInfo) -> None:
+    def validate_transport_cost(cls, value: float, info: ValidationInfo) -> float:
         min_range = 0.0
         max_range = None
         id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
+        return value
 
     @field_validator("transport_capacity")
     @classmethod
-    def validate_transport_capacity(cls, value: float, info: ValidationInfo) -> None:
+    def validate_transport_capacity(cls, value: float, info: ValidationInfo) -> float:
         min_range = 0.0
         max_range = None
         id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
+        return value
