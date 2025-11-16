@@ -1,6 +1,5 @@
-from typing_extensions import override, cast
-
 from pydantic import BaseModel, ValidationInfo, field_validator
+from typing_extensions import cast, override
 
 from transport.context.objects.validation_utils import check_value_in_range
 
@@ -72,3 +71,11 @@ class Route(BaseModel):
         id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
         return value
+
+    @field_validator(mode="after")
+    def validate_different_endpoints(self) -> "Route":
+        if self.origin == self.destination:
+            raise ValueError(
+                f"Route origin and destination must be different, got: {self.origin}"
+            )
+        return self
