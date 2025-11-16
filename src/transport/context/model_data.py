@@ -1,74 +1,70 @@
-from collections.abc import Collection
+from __future__ import annotations
 
-from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
+from collections.abc import Collection
+from typing import List
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 from transport.context.objects import Client, Route, Workshop
 from transport.context.objects.validation_utils import (
     HasId,
-    check_unique_ids,
-    assert_min_count,
     assert_min_active_routes,
+    assert_min_count,
     assert_route_endpoints_exist,
     assert_unique_route_pairs,
+    check_unique_ids,
 )
 
 
 class ModelData(BaseModel):
-    def __init__(self) -> None:
-        super().__init__()
-        self.__workshops: list[Workshop] = list()
-        self.__workshops_by_id: dict[str, Workshop] = dict()
-        self.__clients: list[Client] = list()
-        self.__clients_by_id: dict[str, Client] = dict()
-        self.__routes: list[Route] = list()
-        self.__routes_by_id: dict[str, Route] = dict()
+    # re-validate when assigning to fields after creation (useful in tests)
+    model_config = ConfigDict(validate_assignment=True)
 
-    @property
-    def workshops(self) -> list[Workshop]:
-        return self.__workshops
+    # --- real pydantic fields ---
+    workshops: List[Workshop] = Field(default_factory=list)
+    clients: List[Client] = Field(default_factory=list)
+    routes: List[Route] = Field(default_factory=list)
+    transport_quantity: dict[Route, float] = Field(default_factory=dict)
 
-    @workshops.setter
-    def workshops(self, workshops: list[Workshop]) -> None:
-        self.__workshops = workshops
-        self.__workshops_by_id = {workshop.id_: workshop for workshop in self.workshops}
-
+    # --- derived views (computed on access; no sync issues) ---
     @property
     def workshops_by_id(self) -> dict[str, Workshop]:
-        return self.__workshops_by_id
-
-    @property
-    def clients(self) -> list[Client]:
-        return self.__clients
-
-    @clients.setter
-    def clients(self, clients: list[Client]) -> None:
-        self.__clients = clients
-        self.__clients_by_id = {client.id_: client for client in self.clients}
+        return {w.id_: w for w in self.workshops}
 
     @property
     def clients_by_id(self) -> dict[str, Client]:
-        return self.__clients_by_id
-
-    @property
-    def routes(self) -> list[Route]:
-        return self.__routes
-
-    @routes.setter
-    def routes(self, routes: list[Route]) -> None:
-        self.__routes = routes
-        self.__routes_by_id = {route.id_: route for route in self.routes}
+        return {c.id_: c for c in self.clients}
 
     @property
     def routes_by_id(self) -> dict[str, Route]:
-        return self.__routes_by_id
+        return {r.id_: r for r in self.routes}
+
+    @property
+    def active_routes(self) -> list[Route]:
+        return [r for r in self.routes if getattr(r, "is_active", False)]
 
     @field_validator("workshops", "clients", "routes")
-    def no_duplicate_ids(cls, objects_with_id: Collection[HasId], info: ValidationInfo):
-        check_unique_ids(objects_with_id, info.field_name or "unknown")
-        return objects_with_id
+    @classmethod
+    def no_duplicate_ids(cls, values: Collection[HasId], info: ValidationInfo):
+        """
+        per-field validation: no duplicate ids in each list
+        """
+        # info.field_name is guaranteed here because these are real fields
+        check_unique_ids(values, info.field_name or "unknown")
+        return list(values)
 
     @model_validator(mode="after")
-    def cross_checks(self):
+    def cross_checks(self) -> "ModelData":
+        """
+        cross-field validation
+        """
         # existence
         assert_min_count(self.workshops, "workshop")
         assert_min_count(self.clients, "client")
