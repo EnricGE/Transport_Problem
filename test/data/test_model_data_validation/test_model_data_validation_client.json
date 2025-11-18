@@ -32,6 +32,7 @@
       "destination": "Client1",
       "transport_cost": 12.0,
       "transport_capacity": 15.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     },
     {
@@ -39,6 +40,7 @@
       "destination": "Client2",
       "transport_cost": 11.0,
       "transport_capacity": 16.0,
+      "min_transport_quantity": 0.0,
       "is_active": false
     },
     {
@@ -46,6 +48,7 @@
       "destination": "Client3",
       "transport_cost": 14.0,
       "transport_capacity": 17.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     },
     {
@@ -53,6 +56,7 @@
       "destination": "Client1",
       "transport_cost": 15.0,
       "transport_capacity": 10.0,
+      "min_transport_quantity": 0.0,
       "is_active": false
     },
     {
@@ -60,6 +64,7 @@
       "destination": "Client2",
       "transport_cost": 12.0,
       "transport_capacity": 16.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     },
     {
@@ -67,6 +72,7 @@
       "destination": "Client3",
       "transport_cost": 12.0,
       "transport_capacity": 17.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     },
     {
@@ -74,6 +80,7 @@
       "destination": "Client1",
       "transport_cost": 9.0,
       "transport_capacity": 14.0,
+      "min_transport_quantity": 0.0,
       "is_active": false
     },
     {
@@ -81,6 +88,7 @@
       "destination": "Client2",
       "transport_cost": 18.0,
       "transport_capacity": 19.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     },
     {
@@ -88,6 +96,7 @@
       "destination": "Client3",
       "transport_cost": 17.0,
       "transport_capacity": 14.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     }
   ]

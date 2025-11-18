@@ -18,6 +18,7 @@
       "destination": "Client1",
       "transport_cost": 12.0,
       "transport_capacity": 15.0,
+      "min_transport_quantity": 0.0,
       "is_active": true
     }
   ]
