@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, ValidationInfo, field_validator, model_validator
 from typing_extensions import cast, override
 
 from transport.context.objects.validation_utils import check_value_in_range
@@ -40,6 +40,16 @@ class Route(BaseModel):
     def __repr__(self) -> str:
         return self.id_
 
+    def __hash__(self) -> int:
+        """Make Route hashable so it can be used as dictionary key"""
+        return hash((self.origin, self.destination))
+
+    def __eq__(self, other: object) -> bool:
+        """Define equality based on origin and destination"""
+        if not isinstance(other, Route):
+            return False
+        return self.origin == other.origin and self.destination == other.destination
+
     @field_validator("origin")
     @classmethod
     def origin_not_empty(cls, value: str) -> str:
@@ -72,7 +82,7 @@ class Route(BaseModel):
         check_value_in_range(value, min_range, max_range, id_)
         return value
 
-    @field_validator(mode="after")
+    @model_validator(mode="after")
     def validate_different_endpoints(self) -> "Route":
         if self.origin == self.destination:
             raise ValueError(
