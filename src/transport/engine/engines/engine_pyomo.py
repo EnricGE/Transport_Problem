@@ -59,9 +59,7 @@ class EnginePyomo(AbstractEngine):
         self.model.var_transport_quantity = pyo.Var(
             self.model.routes, within=pyo.NonNegativeReals
         )
-        self.model.var_is_route_used = pyo.Var(
-            self.model.routes, within=pyo.Binary
-        )
+        self.model.var_is_route_used = pyo.Var(self.model.routes, within=pyo.Binary)
 
     def _build_expressions(self) -> None:
         self.model.expression_routes_cost = pyo.Expression(
@@ -70,7 +68,7 @@ class EnginePyomo(AbstractEngine):
 
     def _build_constraints(self) -> None:
         self.model.constraint_workshop_capacity = pyo.Constraint(
-            self.model.routes, rule=self._const_workshop_capacity
+            self.model.workshops, rule=self._const_workshop_capacity
         )
 
         self.model.constraint_client_demand = pyo.Constraint(
@@ -80,11 +78,11 @@ class EnginePyomo(AbstractEngine):
         self.model.constraint_route_capacity = pyo.Constraint(
             self.model.routes, rule=self._const_route_capacity
         )
-        
+
         self.model.constraint_min_transport_quantity_1 = pyo.Constraint(
             self.model.routes, rule=self._const_min_transport_quantity_1
         )
-        
+
         self.model.constraint_min_transport_quantity_2 = pyo.Constraint(
             self.model.routes, rule=self._const_min_transport_quantity_2
         )
@@ -94,19 +92,22 @@ class EnginePyomo(AbstractEngine):
             rule=self._objective_function, sense=pyo.minimize
         )
 
-    def _expr_routes_cost(self, _: pyo.ConcreteModel, route_id: str) -> float:
+    def _expr_routes_cost(self, _: pyo.ConcreteModel, route_id: str):
         route = self.data.routes_by_id[route_id]
         return self.model.var_transport_quantity[route_id] * route.transport_cost
 
-    def _const_workshop_capacity(self, _: pyo.ConcreteModel, route_id: str) -> bool:
-        route = self.data.routes_by_id[route_id]
-        route_workshop = self.data.workshops_by_id[route.origin]
+    def _const_workshop_capacity(self, _: pyo.ConcreteModel, workshop_id: str):
+        workshop = self.data.workshops_by_id[workshop_id]
         return (
-            self.model.var_transport_quantity[route_id]
-            <= route_workshop.production_capacity
+            sum(
+                self.model.var_transport_quantity[route_id]
+                for route_id in self.model.routes
+                if self.data.routes_by_id[route_id].origin == workshop_id
+            )
+            <= workshop.production_capacity
         )
 
-    def _const_client_demand(self, _: pyo.ConcreteModel, client_id: str) -> bool:
+    def _const_client_demand(self, _: pyo.ConcreteModel, client_id: str):
         client = self.data.clients_by_id[client_id]
         return (
             sum(
@@ -117,24 +118,24 @@ class EnginePyomo(AbstractEngine):
             >= client.demand
         )
 
-    def _const_route_capacity(self, _: pyo.ConcreteModel, route_id: str) -> bool:
+    def _const_route_capacity(self, _: pyo.ConcreteModel, route_id: str):
         route = self.data.routes_by_id[route_id]
         return self.model.var_transport_quantity[route_id] <= route.transport_capacity
-        
-    def _const_min_transport_quantity_1(self, _: pyo.ConcreteModel, route_id: str) -> bool:
+
+    def _const_min_transport_quantity_1(self, _: pyo.ConcreteModel, route_id: str):
         route = self.data.routes_by_id[route_id]
         return (
-            self.model.var_transport_quantity[route_id] <= 
-            self.model.var_is_route_used[route] * self.BIG_M
+            self.model.var_transport_quantity[route_id]
+            <= self.model.var_is_route_used[route_id] * self.BIG_M
         )
-    
-    def _const_min_transport_quantity_2(self, _: pyo.ConcreteModel, route_id: str) -> bool:
+
+    def _const_min_transport_quantity_2(self, _: pyo.ConcreteModel, route_id: str):
         route = self.data.routes_by_id[route_id]
         return (
-            self.model.var_transport_quantity[route_id] >= 
-            self.model.var_is_route_used[route] * route.min_transport_quantity
+            self.model.var_transport_quantity[route_id]
+            >= self.model.var_is_route_used[route_id] * route.min_transport_quantity
         )
-        
+
     def _objective_function(self, _: pyo.ConcreteModel) -> float:
         return sum(
             self.model.expression_routes_cost[route_id]

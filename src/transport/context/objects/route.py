@@ -89,7 +89,7 @@ class Route(BaseModel):
     @classmethod
     def validate_min_transport_quantity(cls, value: float, info: ValidationInfo) -> float:
         min_range = 0.0
-        max_range = cls.transport_capacity
+        max_range = info.data.get("transport_capacity") #cls.transport_capacity
         id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
         return value
