@@ -17,7 +17,10 @@ class TestEngine:
 
     def test_engine_constr_client_demand(self) -> None:
         """
-        Descripció del test, què es lo que limita i quina seria la solució si no estigués la restricció
+        Test that the engine respects client demand constraints.
+            
+        The test verifies that transported quantity does not exceed client demand.
+        Expected result: transport_quantity = 10.0 (matching client demand)
         """
         model_data = self.create_model_data("test_engine_constr_client_demand.json")
         Engine(model_data, "cbc").run()

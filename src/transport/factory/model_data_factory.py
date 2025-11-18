@@ -27,7 +27,7 @@ class ModelDataFactory:
                 production_capacity=float(w["production_capacity"]),
                 production_cost=float(w["production_cost"]),
             )
-            for w in data_dict.get("Workshops", [])
+            for w in data_dict.get("workshops", [])
         ]
 
         clients = [
@@ -35,7 +35,7 @@ class ModelDataFactory:
                 id_=c["id"],
                 demand=float(c["demand"]),
             )
-            for c in data_dict.get("Clients", [])
+            for c in data_dict.get("clients", [])
         ]
 
         routes = [
@@ -45,9 +45,10 @@ class ModelDataFactory:
                 destination=r["destination"],
                 transport_cost=float(r["transport_cost"]),
                 transport_capacity=float(r["transport_capacity"]),
+                min_transport_quantity=float(r["min_transport_quantity"]),
                 is_active=bool(r.get("is_active", True)),
             )
-            for r in data_dict.get("Routes", [])
+            for r in data_dict.get("routes", [])
         ]
 
         return ModelData(workshops=workshops, clients=clients, routes=routes)
@@ -87,6 +88,7 @@ class ModelDataFactory:
                     destination=route_dict["destination"],
                     transport_cost=route_dict["transport_cost"],
                     transport_capacity=route_dict["transport_capacity"],
+                    min_transport_quantity=route_dict["min_transport_quantity"],
                     is_active=route_dict["is_active"],
                 )
             )

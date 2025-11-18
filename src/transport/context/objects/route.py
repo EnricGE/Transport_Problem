@@ -18,6 +18,8 @@ class Route(BaseModel):
         Cost to transport the product through the route.
     transport_capacity: float
         Maximum product capacity to transport through the route.
+    min_transport_quantity: float
+        Minimum product quantity to transport through the route.
     is_active: bool
          Boolean indicating whether the route is active.
     """
@@ -26,6 +28,7 @@ class Route(BaseModel):
     destination: str
     transport_cost: float
     transport_capacity: float
+    min_transport_quantity: float
     is_active: bool
 
     @property
@@ -78,6 +81,15 @@ class Route(BaseModel):
     def validate_transport_capacity(cls, value: float, info: ValidationInfo) -> float:
         min_range = 0.0
         max_range = None
+        id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
+        check_value_in_range(value, min_range, max_range, id_)
+        return value
+        
+    @field_validator("min_transport_quantity")
+    @classmethod
+    def validate_min_transport_quantity(cls, value: float, info: ValidationInfo) -> float:
+        min_range = 0.0
+        max_range = cls.transport_capacity
         id_ = cast(str, "Route[" + info.data.get("id_", "unknown") + "]")
         check_value_in_range(value, min_range, max_range, id_)
         return value

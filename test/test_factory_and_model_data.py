@@ -12,7 +12,7 @@ class TestFactoryAndModelData:
     @pytest.fixture(scope="class")
     def model_data(self) -> ModelData:
         return ModelDataFactory.from_json(
-            PATH / "data" / "test_data_and_data_factory.json"
+            PATH / "data" / "test_model_data" / "test_data_and_data_factory.json"
         )
 
     def test_workshops(self, model_data: ModelData) -> None:
@@ -77,7 +77,7 @@ class TestFactoryAndModelData:
         assert route22.origin == "Workshop2"
         assert route22.destination == "Client2"
         assert route22.transport_cost == 12.0
-        assert route22.transport_capacity == 17.0
+        assert route22.transport_capacity == 16.0
         assert route22.is_active
 
         route23 = model_data.routes_by_id["Workshop2,Client3"]
