@@ -2,8 +2,6 @@ import pyomo.environ as pyo
 from typing_extensions import override
 
 from transport.context import ModelData
-
-# from transport.context.objects import Route, Client
 from transport.engine.engines.abstract_engine import AbstractEngine
 
 
@@ -40,26 +38,27 @@ class EnginePyomo(AbstractEngine):
 
     def _build_sets(self) -> None:
         # [Workshop]
-        self.model.workshops = pyo.Set(
+        self.model.workshops = pyo.Set(  # type: ignore
             dimen=1,
             initialize=[w.id_ for w in self.data.workshops],
         )
         # [Clients]
-        self.model.clients = pyo.Set(
+        self.model.clients = pyo.Set(  # type: ignore
             dimen=1,
             initialize=[c.id_ for c in self.data.clients],
         )
         # [Routes]
-        self.model.routes = pyo.Set(
+        self.model.routes = pyo.Set(  # type: ignore
             dimen=1,
             initialize=[r.id_ for r in self.data.routes],
         )
 
     def _build_variables(self) -> None:
-        self.model.var_transport_quantity = pyo.Var(
-            self.model.routes, within=pyo.NonNegativeReals
+        self.model.var_transport_quantity = pyo.Var(  # type: ignore
+            self.model.routes,
+            within=pyo.NonNegativeReals,  # type: ignore
         )
-        self.model.var_is_route_used = pyo.Var(self.model.routes, within=pyo.Binary)
+        self.model.var_is_route_used = pyo.Var(self.model.routes, within=pyo.Binary)  # type: ignore
 
     def _build_expressions(self) -> None:
         self.model.expression_routes_cost = pyo.Expression(
@@ -68,23 +67,28 @@ class EnginePyomo(AbstractEngine):
 
     def _build_constraints(self) -> None:
         self.model.constraint_workshop_capacity = pyo.Constraint(
-            self.model.workshops, rule=self._const_workshop_capacity
+            self.model.workshops,
+            rule=self._const_workshop_capacity,  # type: ignore
         )
 
         self.model.constraint_client_demand = pyo.Constraint(
-            self.model.clients, rule=self._const_client_demand
+            self.model.clients,
+            rule=self._const_client_demand,  # type: ignore
         )
 
         self.model.constraint_route_capacity = pyo.Constraint(
-            self.model.routes, rule=self._const_route_capacity
+            self.model.routes,
+            rule=self._const_route_capacity,  # type: ignore
         )
 
         self.model.constraint_min_transport_quantity_1 = pyo.Constraint(
-            self.model.routes, rule=self._const_min_transport_quantity_1
+            self.model.routes,
+            rule=self._const_min_transport_quantity_1,  # type: ignore
         )
 
         self.model.constraint_min_transport_quantity_2 = pyo.Constraint(
-            self.model.routes, rule=self._const_min_transport_quantity_2
+            self.model.routes,
+            rule=self._const_min_transport_quantity_2,  # type: ignore
         )
 
     def _build_objective(self) -> None:
@@ -136,11 +140,23 @@ class EnginePyomo(AbstractEngine):
             >= self.model.var_is_route_used[route_id] * route.min_transport_quantity
         )
 
-    def _objective_function(self, _: pyo.ConcreteModel) -> float:
-        return sum(
+    def _objective_function(self, _: pyo.ConcreteModel):
+        transport_cost = sum(
             self.model.expression_routes_cost[route_id]
             for route_id in self.model.routes
         )
+
+        production_cost = sum(
+            self.data.workshops_by_id[workshop_id].production_cost
+            * sum(
+                self.model.var_transport_quantity[route_id]
+                for route_id in self.model.routes
+                if self.data.routes_by_id[route_id].origin == workshop_id
+            )
+            for workshop_id in self.model.workshops
+        )
+
+        return transport_cost + production_cost
 
     def _check_solution_status(self) -> None:
         status = self.solution.solver.status
