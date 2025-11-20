@@ -1,0 +1,38 @@
+{
+  "workshops": [
+    {
+      "id": "Workshop1",
+      "production_capacity": 100.0,
+      "production_cost": 20.0
+    },
+    {
+      "id": "Workshop2",
+      "production_capacity": 100.0,
+      "production_cost": 20.0
+    }
+  ],
+  "clients": [
+    {
+      "id": "Client1",
+      "demand": 10.0
+    }
+  ],
+  "routes": [
+    {
+      "origin": "Workshop1",
+      "destination": "Client1",
+      "transport_cost": 12.0,
+      "transport_capacity": 50.0,
+      "min_transport_quantity": 5.0,
+      "is_active": true
+    },
+    {
+      "origin": "Workshop2",
+      "destination": "Client1",
+      "transport_cost": 11.0,
+      "transport_capacity": 50.0,
+      "min_transport_quantity": 8.0,
+      "is_active": true
+    }
+  ]
+}
