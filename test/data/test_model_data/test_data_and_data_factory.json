@@ -35,7 +35,7 @@
       "origin": "Workshop1",
       "destination": "Client1",
       "transport_cost": 12.0,
-      "transport_capacity": 15.0,
+      "transport_capacity": 100.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     },
@@ -51,7 +51,7 @@
       "origin": "Workshop1",
       "destination": "Client3",
       "transport_cost": 14.0,
-      "transport_capacity": 17.0,
+      "transport_capacity": 44.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     },
@@ -67,7 +67,7 @@
       "origin": "Workshop2",
       "destination": "Client2",
       "transport_cost": 12.0,
-      "transport_capacity": 16.0,
+      "transport_capacity": 36.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     },
@@ -75,7 +75,7 @@
       "origin": "Workshop2",
       "destination": "Client3",
       "transport_cost": 12.0,
-      "transport_capacity": 17.0,
+      "transport_capacity": 25.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     },
@@ -91,7 +91,7 @@
       "origin": "Workshop3",
       "destination": "Client2",
       "transport_cost": 18.0,
-      "transport_capacity": 19.0,
+      "transport_capacity": 39.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     },
@@ -99,7 +99,7 @@
       "origin": "Workshop3",
       "destination": "Client3",
       "transport_cost": 17.0,
-      "transport_capacity": 14.0,
+      "transport_capacity": 24.0,
       "min_transport_quantity": 0.0,
       "is_active": true
     }

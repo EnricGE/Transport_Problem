@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import pyomo.environ as pyo
+from pyomo.opt import TerminationCondition
 from typing_extensions import override
 
+from transport.engine.result import SolveResult
 from transport.context import ModelData
 from transport.engine.engines.abstract_engine import AbstractEngine
 
@@ -11,10 +15,33 @@ class EnginePyomo(AbstractEngine):
         self.BIG_M = 1e6
 
     @override
-    def run(self, solver: str) -> None:
+    def run(self, solver: str) -> SolveResult:
         self._build_model()
-        self._solve_model(solver)
-        self._build_solution()
+        results = self._solve_model(solver)
+
+        term = results.solver.termination_condition
+
+        # If infeasible/unbounded/etc, do NOT read vars
+        if term not in (TerminationCondition.optimal, TerminationCondition.feasible):
+            return SolveResult(
+                status=str(term),
+                objective=float("nan"),
+                transport_quantity={},
+                solver=solver,
+            )
+
+        # Only extract if we have a solution
+        transport_quantity = {
+            route_id: float(pyo.value(var))
+            for route_id, var in self.model.var_transport_quantity.items()
+        }
+
+        return SolveResult(
+            status=str(term),
+            objective=float(pyo.value(self.model.objective)),
+            transport_quantity=transport_quantity,
+            solver=solver,
+        )
 
     def _build_model(self) -> None:
         self.model = pyo.ConcreteModel()
@@ -25,10 +52,11 @@ class EnginePyomo(AbstractEngine):
         self._build_constraints()
         self._build_objective()
 
-    def _solve_model(self, solver: str) -> None:
-        solver = pyo.SolverFactory(solver)
-        self.solution = solver.solve(self.model, tee=True)
-        self._check_solution_status()
+    def _solve_model(self, solver: str):
+        solver_obj = pyo.SolverFactory(solver)
+        results = solver_obj.solve(self.model, tee=False)
+        self.solver = solver
+        return results
 
     def _build_solution(self) -> None:
         self.data.transport_quantity = {

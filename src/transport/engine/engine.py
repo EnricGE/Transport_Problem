@@ -1,5 +1,8 @@
 from typing import Literal
+from pathlib import Path
+from transport.factory.model_data_factory import ModelDataFactory
 
+from transport.engine.result import SolveResult
 from transport.context import ModelData
 from transport.engine.engines import AbstractEngine, EngineHexaly, EnginePyomo
 
@@ -30,6 +33,6 @@ class Engine:
         else:
             self.engine: AbstractEngine = engine_class(self.data)
     
-    def run(self) -> None:
-        if self.engine is not None:
-            self.engine.run(self.engine_type)
+    def run(self) -> SolveResult:
+        return self.engine.run(self.engine_type)
+
