@@ -1,41 +1,76 @@
-# Transport Problem – Production & Transportation Optimization
+# Gas Distribution Planning Under Network Capacity Constraints
 
-![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Optimization](https://img.shields.io/badge/optimization-Pyomo-green)
-![Status](https://img.shields.io/badge/status-active-success)
+A Decision Intelligence case study focused on **planning gas distribution flows through a constrained network**.
 
-A Python project that solves a **production + transportation optimization problem** using mathematical programming.
+The project supports decisions on how to route gas from multiple production sites (workshops) to multiple clients through capacity‑limited conduits, **minimizing operational cost while satisfying demand and network constraints**.
 
-The goal is to determine how much to produce at each workshop and how much to transport along each route in order to **minimize total cost**, while satisfying capacity, demand, and operational constraints.
+This is not a generic transport model: it represents a real industrial decision problem where routing choices have cost, feasibility, and operational consequences.
 
 ---
 
-## Problem Overview
+## Decision Context
 
-- Workshops have limited production capacity and a unit production cost  
-- Clients require a fixed demand  
-- Routes connect workshops to clients with:
-  - transport cost
-  - capacity limits
-  - optional minimum shipment constraints
-- Some routes may be inactive
+A gas distribution operator must decide:
 
-The model finds the **lowest-cost feasible transport plan** that satisfies all constraints.
+- How much gas to produce at each workshop  
+- How to route gas through a network of conduits  
+- Which routes to activate or limit  
+
+The challenge is to **meet all client demand at minimum cost**, while respecting:
+
+- Production capacity limits  
+- Network capacity constraints  
+- Operational rules on minimum flows and route availability  
+
+Each feasible routing represents a different operational policy, with clear cost and feasibility trade‑offs.
+
+---
+
+## Problem Framing
+
+**Decision to make**  
+Choose a gas routing and production plan that minimizes total cost.
+
+**Alternatives**  
+Different flow allocations across the network, using different subsets of routes and production sites.
+
+**Constraints**
+- Limited production capacity at workshops  
+- Fixed demand at clients  
+- Capacity limits on each conduit  
+- Optional minimum flow requirements  
+- Route availability (active / inactive)  
+
+**Objective**
+- Minimize total production and transportation cost  
+
+---
+
+## Modeling Approach
+
+The problem is formulated as a **constrained network flow optimization model**:
+
+- Continuous decision variables for production and transported quantities  
+- Linear cost structure  
+- Capacity and flow conservation constraints  
+- Optional binary variables for route activation  
+
+The model is solved deterministically using linear / mixed‑integer programming.
 
 ---
 
 ## Key Features
 
-- Clean domain models with validation (Pydantic)
-- Deterministic optimization model (LP / MILP)
-- Production capacity constraints
-- Exact demand satisfaction
-- Route capacity & minimum shipment constraints
-- Binary route activation variables
+- Clean domain modeling with validation (Pydantic)
+- Production + transport cost optimization
+- Capacity‑constrained network flow modeling
+- Optional minimum shipment constraints
+- Route activation logic
+- Explicit, testable solve results
 - Multiple solver support:
-  - CBC (open-source)
+  - CBC (open‑source)
   - Gurobi (commercial)
-  - Hexaly (WIP)
+  - Hexaly (experimental)
 
 ---
 
@@ -43,47 +78,10 @@ The model finds the **lowest-cost feasible transport plan** that satisfies all c
 
 - **Python 3.10+**
 - **Pyomo** – optimization modeling
-- **Pydantic** – data validation
+- **Pydantic** – domain validation
 - **CBC / Gurobi** – solvers
 
 ---
-
-## Installation
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-Make sure a Pyomo-compatible solver is installed and accessible in your PATH.
-
----
-
-## Project Structure
-
-```
-TransportProblem/
-├── src/transport/
-│   ├── engine/        # Optimization engines
-│   ├── factory/       # Data loading & conversion
-│   ├── context/       # Domain models
-│   └── run.py         # Example runner
-├── test/              # Unit tests & test data
-└── README.md
-```
-
----
-
-## Usage
-
-### Run example
-
-From the project root:
-
-```bash
-python -m transport.run
-```
 
 ### Python API
 
@@ -105,46 +103,59 @@ print(result.transport_quantity)
 
 ---
 
-## Input Data Format
+## Input Data
 
-Input is provided as JSON with three sections:
+Input is provided as JSON with three core entities:
 
-- **workshops**
-  - `id`
-  - `production_capacity`
-  - `production_cost`
-- **clients**
-  - `id`
-  - `demand`
-- **routes**
-  - `origin`
-  - `destination`
-  - `transport_cost`
-  - `transport_capacity`
-  - `min_transport_quantity`
-  - `is_active`
+### Workshops
+- `id`
+- `production_capacity`
+- `production_cost`
+
+### Clients
+- `id`
+- `demand`
+
+### Routes
+- `origin`
+- `destination`
+- `transport_cost`
+- `transport_capacity`
+- `min_transport_quantity`
+- `is_active`
 
 ---
 
 ## Output
 
-The solver returns a `SolveResult` containing:
+The solver returns a structured `SolveResult` containing:
 
-- solver termination status
-- total objective value
-- transported quantity per route
+- Solver termination status  
+- Total cost  
+- Production levels per workshop  
+- Transported quantities per route  
 
-This explicit result object makes the model easy to test, extend, and integrate.
+This makes the model easy to analyze, test, and extend.
+
+---
+
+## What This Case Demonstrates
+
+- How **physical infrastructure constraints** shape feasible decisions  
+- How cost‑optimal solutions emerge from constrained choices  
+- How network structure creates trade‑offs between routes and production sites  
+
+This case fits naturally within **Decision Intelligence**, where the goal is not just optimization, but **justified, transparent operational decisions**.
 
 ---
 
 ## Roadmap
 
-- Add CLI interface (`transport-solve`)
-- Soft demand constraints with penalty variables
-- Infeasibility diagnostics
-- Result export to CSV / JSON
-- Continuous Integration (GitHub Actions)
+- Demand uncertainty and scenario analysis
+- Soft demand constraints with penalties
+- Route outage scenarios
+- Result export (CSV / JSON)
+- CLI interface
 
 ---
 
