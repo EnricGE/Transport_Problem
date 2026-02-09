@@ -1,210 +1,154 @@
-# ⛽ Gas Distribution Planning — Network Flow Optimization
+# ⛽ Gas Transport Planning — Decision Under Network Constraints
 
-This project implements a **realistic gas distribution planning problem** using **linear / mixed-integer optimization**, under **production, demand, and network capacity constraints**.
-
-The goal is **not just cost minimization**, but to **support justified operational decisions** by exposing how infrastructure constraints, routing choices, and production limits interact.
+**Network optimisation, cost–feasibility trade-offs, and operational plan selection**
 
 ---
 
-## 1. Problem Overview
+## 1. Context & Motivation
 
-Given:
+Gas distribution decisions are rarely about finding *a* feasible routing.  
+They are about **choosing an operational plan** that balances:
 
-- A set of **gas production sites (workshops)** acting as sources  
-- A set of **clients** with fixed demand  
-- A network of **capacity-limited conduits (routes)**  
-- Production, transport, and activation costs  
+- production and transport cost  
+- feasibility under hard infrastructure constraints  
+- utilisation of limited network capacity  
+- exposure to bottlenecks and operational rigidity  
 
-We compute a **single-period distribution plan** that:
+This project studies a **gas transport planning problem under network capacity constraints**, using deterministic optimisation to support **transparent and defensible routing decisions**.
 
-- Satisfies all client demand  
-- Respects production and network capacity limits  
-- Enforces operational routing rules  
-- Minimizes total operational cost  
+The goal is not to build a generic transport solver, but to answer:
 
-All constraints are **hard and always enforced**.  
-Each feasible solution represents a **distinct operational policy**.
+> *“Given strict infrastructure limits, how should gas be routed from production sites to clients — and what trade-offs does this imply?”*
 
 ---
 
-## 2. Data Schema
+## 2. Decision Problem
 
-All input data is JSON-based and validated before optimization.
+A gas distribution operator must plan operations for a single planning period.
 
-### `workshops.json`
+The system consists of:
+- production sites with limited capacity  
+- clients with fixed demand  
+- a network of conduits with hard capacity limits  
 
-**Fields**
+Routing decisions:
+- determine which production sites supply which clients  
+- define how capacity is allocated across the network  
 
-- `id`: unique identifier  
-- `production_capacity`: maximum producible quantity  
-- `production_cost`: unit production cost  
+All constraints are **hard and always enforced**: infeasible plans are not acceptable.
 
-Workshops act **only as sources** in the network.
-
----
-
-### `clients.json`
-
-**Fields**
-
-- `id`: unique identifier  
-- `demand`: required gas quantity  
-
-Client demand must be **fully satisfied**.
+The decision-maker must choose **one routing and production plan**.
 
 ---
 
-### `routes.json`
+## 3. Operational Policies Considered
 
-**Fields**
+Each feasible solution corresponds to an **implicit operational policy**, defined by:
 
-- `origin`: source workshop  
-- `destination`: client  
-- `transport_cost`: unit transport cost  
-- `transport_capacity`: maximum transferable quantity  
-- `min_transport_quantity`: minimum required flow (hard constraint)  
-- `is_active`: route availability flag  
+- production levels at each workshop  
+- activated transport routes  
+- flow quantities assigned to each route  
 
-Routes define a **directed distribution network** from workshops to clients.
-
----
-
-### `scenario.json`
-
-**Fields**
-
-- `allow_route_activation`: enable / disable binary route activation  
-- `solver`: selected optimization solver  
-- `solver_options`: solver-specific parameters  
+Different policies reflect different strategic choices, such as:
+- concentrating production on low-cost sites  
+- spreading flows to reduce saturation  
+- activating or deactivating specific routes  
 
 ---
 
-## 3. Decision Variables
+## 4. Modelling & Evaluation Approach
 
-| Variable | Meaning |
-|--------|--------|
-| `production[w]` | Gas produced at workshop `w` |
-| `flow[r]` | Gas transported on route `r` |
-| `use_route[r]` | Route activation (binary, optional) |
-| `total_cost` | Total production + transport cost |
+The problem is formulated as a **network flow optimisation model**:
+
+- Continuous variables for production and transported quantities  
+- Optional binary variables for route activation  
+- Linear cost structure  
+- Flow conservation and capacity constraints  
+
+Key characteristics:
+- Single-period, deterministic decision  
+- No demand relaxation or penalty terms  
+- No probabilistic assumptions  
+
+Each candidate policy is evaluated purely on:
+- feasibility  
+- total operational cost  
 
 ---
 
-## 4. Constraints
+## 5. Decision Variables & Constraints
+
+### Decision Variables
+- Production quantity at each workshop  
+- Transported quantity on each route  
+- Optional route activation decisions  
 
 ### Hard Constraints
+- Full demand satisfaction at all clients  
+- Production capacity limits  
+- Route capacity limits  
+- Minimum flow requirements (when specified)  
+- Route availability and activation logic  
 
-1. **Demand satisfaction**  
-   Total incoming flow to each client equals demand.
-
-2. **Production capacity**  
-   `production[w] ≤ production_capacity[w]`
-
-3. **Route capacity**  
-   `flow[r] ≤ transport_capacity[r]`
-
-4. **Minimum flow requirements**  
-   `flow[r] ≥ min_transport_quantity[r]` (when specified)
-
-5. **Route activation logic (optional)**  
-   Flow allowed only if route is active.
-
-6. **Flow consistency**  
-   Transported quantities originate exclusively from workshops.
-
-All constraints are **strictly enforced** — no penalties, no relaxations.
+These constraints define the **feasible decision space**.
 
 ---
 
-## 5. Objective Function
+## 6. Objective Function
 
-The solver minimizes:
+The decision criterion is:
 
 ```
-Total production cost
-+ Total transport cost
-+ Optional route activation cost
+Minimise total operational cost
+= production cost + transport cost (+ optional activation cost)
 ```
 
-Formally:
-
-```
-min Σ production_cost[w] × production[w]
-  + Σ transport_cost[r] × flow[r]
-  + Σ activation_cost[r] × use_route[r]
-```
-
-This yields the **lowest-cost feasible operational policy**.
+This objective identifies the **lowest-cost feasible operational policy** under the imposed constraints.
 
 ---
 
-## 6. How to Run
+## 7. Decision Insights
 
-### Install dependencies
+Typical questions this model helps answer:
 
-```bash
-uv sync
-```
+- Which production sites are actually used, and why?  
+- Which routes become binding bottlenecks?  
+- Where does cost optimality conflict with network rigidity?  
+- How sensitive feasibility is to capacity reductions or outages?  
 
-### Run the optimization
-
-```bash
-python scripts/run_model.py --scenario data/scenarios/base.json
-```
+The value lies in **understanding the structure of the optimal decision**, not just computing it.
 
 ---
 
-## 7. Outputs
+## 8. Decision Recommendation
 
-### Solver result object
+For a given scenario, the recommended decision is:
 
-The solver returns a structured `SolveResult` containing:
+> **The feasible routing and production plan with the lowest total cost, fully respecting all production, demand, and network constraints.**
 
-- Solver termination status  
-- Total cost  
-- Production levels per workshop  
-- Transported quantities per route  
-
----
-
-### Typical decision insights
-
-- Which workshops supply which clients  
-- Which routes are saturated or unused  
-- Cost trade-offs between production sites  
-- Impact of capacity bottlenecks on feasibility  
+Because all assumptions are explicit and constraints are hard, the recommendation is:
+- transparent  
+- reproducible  
+- auditable  
 
 ---
 
-## 8. Design Choices
+## 9. Limitations & Extensions
 
-- **Network flow formulation** chosen for:
-  - Transparency
-  - Deterministic behavior
-  - Strong optimality guarantees
-- **Hard constraints only**, reflecting strict industrial requirements
-- **Optional MILP structure**, enabling:
-  - Pure LP for baseline studies
-  - Binary routing logic when operationally required
-- Model designed to remain:
-  - Auditable
-  - Testable
-  - Scenario-driven
+This is a **deliberately static, single-period model**.
+
+Not included (yet):
+- demand uncertainty or scenarios  
+- soft constraints or penalty-based relaxations  
+- route outage probabilities  
+- shadow price or sensitivity analysis  
+
+These extensions would allow richer risk-aware decisions.
 
 ---
 
-## 9. Possible Extensions
+## 10. Takeaway
 
-- Demand uncertainty and scenario analysis  
-- Soft demand constraints with penalties  
-- Route outage scenarios  
-- Bottleneck and sensitivity analysis  
-- CLI interface and result export (CSV / JSON)  
+> **The value of network optimisation lies not in computing flows, but in revealing how infrastructure constraints shape feasible and defensible operational decisions.**
 
----
-
-## 10. Author Notes
-
-This project focuses on **decision quality**, not prediction.
-
-It demonstrates how **physical infrastructure constraints** and **network structure** define feasible operational policies, and how optimization can support **transparent, defensible decisions** under real-world constraints.
+This project demonstrates how optimisation can be used as a **Decision Intelligence tool** to justify routing policies under strict physical constraints.
